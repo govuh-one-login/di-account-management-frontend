@@ -9,6 +9,8 @@ import {
   supportWebchatContact,
   supportDiscordContact,
   getDiscordContactUrl,
+  getContactEmailServiceUrl,
+  getContactEmailAddress,
   getAccessibilityStatementUrl,
   passkeysEnabled,
 } from "../../config.js";
@@ -57,6 +59,8 @@ const render = (req: Request, res: Response): void => {
     contactPhoneEnabled: supportPhoneContact(),
     contactDiscordEnabled: supportDiscordContact(),
     discordContactUrl: getDiscordContactUrl(),
+    contactEmailServiceEnabled: getContactEmailServiceUrl() !== "",
+    contactEmailAddress: getContactEmailAddress(),
     showContactEmergencyMessage: showContactEmergencyMessage(),
     referenceCode,
     contactEmailServiceUrl: PATH_DATA.TRACK_AND_REDIRECT.url,
