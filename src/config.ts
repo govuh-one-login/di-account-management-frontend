@@ -237,7 +237,35 @@ export function supportDiscordContact(): boolean {
 }
 
 export function getContactEmailServiceUrl(): string {
-  return process.env.CONTACT_EMAIL_SERVICE_URL;
+  const configured = process.env.CONTACT_EMAIL_SERVICE_URL?.trim();
+  if (!configured) {
+    return "";
+  }
+
+  try {
+    const url = new URL(configured);
+    if (
+      url.protocol !== "https:" ||
+      !(
+        url.hostname === "gov.uhrblx.com" ||
+        url.hostname.endsWith(".gov.uhrblx.com")
+      ) ||
+      url.username ||
+      url.password
+    ) {
+      return "";
+    }
+    return url.toString();
+  } catch {
+    return "";
+  }
+}
+
+export function getContactEmailAddress(): string {
+  const configured = process.env.ONE_LOGIN_CONTACT_EMAIL?.trim() ?? "";
+  return /^[^\\s@<>]+@[^\\s@<>]+\\.[^\\s@<>]+$/.test(configured)
+    ? configured
+    : "";
 }
 
 export function googleAnalytics4GtmContainerId(): string {
