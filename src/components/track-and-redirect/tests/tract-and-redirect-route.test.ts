@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import express from "express";
 import supertest from "supertest";
 import * as eventServiceModule from "../../../services/event-service.js";
+import * as config from "../../../config.js";
 import { trackAndRedirectRouter } from "../track-and-redirect-route.js";
 import * as trackAndRedirectController from "../track-and-redirect-controller.js";
 import { PATH_DATA } from "../../../app.constants";
@@ -25,12 +26,27 @@ describe("trackAndRedirectRouter", () => {
     expect(response.headers.location).toBe(PATH_DATA.CONTACT.url);
   });
 
+  it("does not forward users when a validated UH support destination is unavailable", async () => {
+    app = express();
+    app.use(mockSessionMiddleware({ queryParameters: {} }));
+    app.use(trackAndRedirectRouter);
+    vi.spyOn(config, "getContactEmailServiceUrl").mockReturnValue("");
+    const redirectSpy = vi.spyOn(
+      trackAndRedirectController,
+      "buildContactEmailServiceUrl"
+    );
+    const response = await supertest(app).get(PATH_DATA.TRACK_AND_REDIRECT.url);
+    expect(response.redirect).toBe(true);
+    expect(response.headers.location).toBe(PATH_DATA.CONTACT.url);
+    expect(redirectSpy).not.toHaveBeenCalled();
+  });
+
   it("should log an audit event and redirect to the email service URL", async () => {
     app = express();
     app.use(
       mockSessionMiddleware({
         queryParameters: {
-          fromURL: "https://home.dev.gov.uk",
+          fromURL: "https://www.gov.uhrblx.com/services/",
         },
       })
     );
@@ -43,7 +59,10 @@ describe("trackAndRedirectRouter", () => {
       send: vi.fn(),
     };
     eventServiceStub.mockReturnValue(fakeService);
-    const fakeEmailServiceUrl = new URL("http://fake-email-service.com");
+    const fakeEmailServiceUrl = new URL("https://www.gov.uhrblx.com/contact/");
+    vi.spyOn(config, "getContactEmailServiceUrl").mockReturnValue(
+      fakeEmailServiceUrl.toString()
+    );
     vi.spyOn(
       trackAndRedirectController,
       "buildContactEmailServiceUrl"

@@ -12,12 +12,12 @@ const CONTACT_ONE_LOGIN_TEMPLATE = "contact-govuk-one-login/index.njk";
 const MOCK_REFERENCE_CODE = "123456";
 const MOCK_NONCE = "abcdef";
 
-describe("Contact GOV.UK One Login controller", () => {
+describe("Contact GOV.UH One Login controller", () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
   let loggerSpy: ReturnType<typeof vi.fn>;
   let sqsClientStub: ReturnType<typeof vi.fn>;
-  const baseUrl = "https://home.account.gov.uk";
+  const baseUrl = "https://home.account.gov.uhrblx.com";
 
   beforeEach(() => {
     vi.spyOn(config, "passkeysEnabled").mockReturnValue(true);
@@ -36,7 +36,7 @@ describe("Contact GOV.UK One Login controller", () => {
         },
       } as any,
       protocol: "https",
-      hostname: "home.account.gov.uk",
+      hostname: "home.account.gov.uhrblx.com",
       originalUrl: baseUrl,
       language: "en",
       log: logger,
@@ -65,9 +65,9 @@ describe("Contact GOV.UK One Login controller", () => {
     process.env.SHOW_CONTACT_EMERGENCY_MESSAGE = "1";
     process.env.SUPPORT_WEBCHAT_CONTACT = "1";
     process.env.CONTACT_EMAIL_SERVICE_URL =
-      "https://signin.account.gov.uk/contact-us";
+      "https://www.gov.uhrblx.com/contact/";
     process.env.ACCESSIBILITY_STATEMENT_URL =
-      "https://signin.account.gov.uk/accessibility-statement";
+      "https://sign-in.account.gov.uhrblx.com/accessibility-statement";
     process.env.WEBCHAT_SOURCE_URL = "https://example.com";
     process.env.AUDIT_QUEUE_URL = "http://localhost:4566";
   });
@@ -78,6 +78,8 @@ describe("Contact GOV.UK One Login controller", () => {
     delete process.env.SHOW_CONTACT_EMERGENCY_MESSAGE;
     delete process.env.SUPPORT_WEBCHAT_CONTACT;
     delete process.env.CONTACT_EMAIL_SERVICE_URL;
+    delete process.env.ONE_LOGIN_CONTACT_EMAIL;
+    delete process.env.DISCORD_CONTACT_URL;
     delete process.env.WEBCHAT_SOURCE_URL;
     delete process.env.ACCESSIBILITY_STATEMENT_URL;
   });
@@ -90,17 +92,21 @@ describe("Contact GOV.UK One Login controller", () => {
           isAuthenticated: true,
         },
       } as any;
-      req.query.fromURL = "https://home.account.gov.uk/security";
+      req.query.fromURL = "https://home.account.gov.uhrblx.com/security";
       contactGet(req as Request, res as Response);
       // query data should be passed to the page render
       expect(res.render).toHaveBeenCalledWith(CONTACT_ONE_LOGIN_TEMPLATE, {
-        contactWebchatEnabled: true,
-        contactPhoneEnabled: true,
-        showContactEmergencyMessage: true,
+        contactWebchatEnabled: false,
+        contactPhoneEnabled: false,
+        contactDiscordEnabled: false,
+        discordContactUrl: "",
+        contactEmailServiceEnabled: true,
+        contactEmailAddress: "",
+        showContactEmergencyMessage: false,
         referenceCode: MOCK_REFERENCE_CODE,
         contactEmailServiceUrl: "/track-and-redirect",
         accessibilityStatementUrl:
-          "https://signin.account.gov.uk/accessibility-statement",
+          "https://sign-in.account.gov.uhrblx.com/accessibility-statement",
         webchatSource: "https://example.com",
         baseUrl,
         language: "en",
@@ -110,7 +116,7 @@ describe("Contact GOV.UK One Login controller", () => {
     });
 
     it("should render contact centre triage page with fromURL from session and signedOut = false", () => {
-      const validUrl = "https://home.account.gov.uk/security";
+      const validUrl = "https://home.account.gov.uhrblx.com/security";
       req.session = {
         referenceCode: MOCK_REFERENCE_CODE,
         queryParameters: {
@@ -126,13 +132,17 @@ describe("Contact GOV.UK One Login controller", () => {
       };
       contactGet(req as Request, res as Response);
       expect(res.render).toHaveBeenCalledWith(CONTACT_ONE_LOGIN_TEMPLATE, {
-        contactWebchatEnabled: true,
-        contactPhoneEnabled: true,
-        showContactEmergencyMessage: true,
+        contactWebchatEnabled: false,
+        contactPhoneEnabled: false,
+        contactDiscordEnabled: false,
+        discordContactUrl: "",
+        contactEmailServiceEnabled: true,
+        contactEmailAddress: "",
+        showContactEmergencyMessage: false,
         referenceCode: MOCK_REFERENCE_CODE,
         contactEmailServiceUrl: "/track-and-redirect",
         accessibilityStatementUrl:
-          "https://signin.account.gov.uk/accessibility-statement",
+          "https://sign-in.account.gov.uhrblx.com/accessibility-statement",
         webchatSource: "https://example.com",
         baseUrl,
         language: "en",
@@ -142,7 +152,7 @@ describe("Contact GOV.UK One Login controller", () => {
     });
 
     it("should render contact centre triage page with additional fields from the mobile app", () => {
-      const fromURL = "https://home.account.gov.uk/security";
+      const fromURL = "https://home.account.gov.uhrblx.com/security";
       const appSessionId = "123456789";
       const appErrorCode = "ERRORCODE123";
       const theme = "WaveyTheme";
@@ -163,10 +173,14 @@ describe("Contact GOV.UK One Login controller", () => {
       expect(res.render).toHaveBeenCalledWith(CONTACT_ONE_LOGIN_TEMPLATE, {
         contactEmailServiceUrl: "/track-and-redirect",
         accessibilityStatementUrl:
-          "https://signin.account.gov.uk/accessibility-statement",
-        contactWebchatEnabled: true,
-        contactPhoneEnabled: true,
-        showContactEmergencyMessage: true,
+          "https://sign-in.account.gov.uhrblx.com/accessibility-statement",
+        contactWebchatEnabled: false,
+        contactPhoneEnabled: false,
+        contactDiscordEnabled: false,
+        discordContactUrl: "",
+        contactEmailServiceEnabled: true,
+        contactEmailAddress: "",
+        showContactEmergencyMessage: false,
         referenceCode: MOCK_REFERENCE_CODE,
         webchatSource: "https://example.com",
         baseUrl,
@@ -182,7 +196,7 @@ describe("Contact GOV.UK One Login controller", () => {
     });
 
     it("should render contact centre triage page ignoring invalid fields from the mobile app", () => {
-      const validUrl = "https://home.account.gov.uk/security";
+      const validUrl = "https://home.account.gov.uhrblx.com/security";
       const appSessionId =
         "123456789123456789123456789123456789123456789123456789123456789123456789123456789"; // too long
       const appErrorCode = ";;***;;"; // unsafe characters
@@ -203,10 +217,14 @@ describe("Contact GOV.UK One Login controller", () => {
       expect(res.render).toHaveBeenCalledWith(CONTACT_ONE_LOGIN_TEMPLATE, {
         contactEmailServiceUrl: "/track-and-redirect",
         accessibilityStatementUrl:
-          "https://signin.account.gov.uk/accessibility-statement",
-        contactWebchatEnabled: true,
-        contactPhoneEnabled: true,
-        showContactEmergencyMessage: true,
+          "https://sign-in.account.gov.uhrblx.com/accessibility-statement",
+        contactWebchatEnabled: false,
+        contactPhoneEnabled: false,
+        contactDiscordEnabled: false,
+        discordContactUrl: "",
+        contactEmailServiceEnabled: true,
+        contactEmailAddress: "",
+        showContactEmergencyMessage: false,
         referenceCode: MOCK_REFERENCE_CODE,
         webchatSource: "https://example.com",
         baseUrl,
@@ -235,10 +253,14 @@ describe("Contact GOV.UK One Login controller", () => {
       expect(res.render).toHaveBeenCalledWith(CONTACT_ONE_LOGIN_TEMPLATE, {
         contactEmailServiceUrl: "/track-and-redirect",
         accessibilityStatementUrl:
-          "https://signin.account.gov.uk/accessibility-statement",
-        contactWebchatEnabled: true,
-        contactPhoneEnabled: true,
-        showContactEmergencyMessage: true,
+          "https://sign-in.account.gov.uhrblx.com/accessibility-statement",
+        contactWebchatEnabled: false,
+        contactPhoneEnabled: false,
+        contactDiscordEnabled: false,
+        discordContactUrl: "",
+        contactEmailServiceEnabled: true,
+        contactEmailAddress: "",
+        showContactEmergencyMessage: false,
         referenceCode: MOCK_REFERENCE_CODE,
         webchatSource: "https://example.com",
         baseUrl,
@@ -272,10 +294,14 @@ describe("Contact GOV.UK One Login controller", () => {
       expect(res.render).toHaveBeenCalledWith(CONTACT_ONE_LOGIN_TEMPLATE, {
         contactEmailServiceUrl: "/track-and-redirect",
         accessibilityStatementUrl:
-          "https://signin.account.gov.uk/accessibility-statement",
-        contactWebchatEnabled: true,
-        contactPhoneEnabled: true,
-        showContactEmergencyMessage: true,
+          "https://sign-in.account.gov.uhrblx.com/accessibility-statement",
+        contactWebchatEnabled: false,
+        contactPhoneEnabled: false,
+        contactDiscordEnabled: false,
+        discordContactUrl: "",
+        contactEmailServiceEnabled: true,
+        contactEmailAddress: "",
+        showContactEmergencyMessage: false,
         referenceCode: MOCK_REFERENCE_CODE,
         webchatSource: "https://example.com",
         baseUrl,
@@ -294,13 +320,17 @@ describe("Contact GOV.UK One Login controller", () => {
       } as any;
       contactGet(req as Request, res as Response);
       expect(res.render).toHaveBeenCalledWith(CONTACT_ONE_LOGIN_TEMPLATE, {
-        contactWebchatEnabled: true,
-        contactPhoneEnabled: true,
-        showContactEmergencyMessage: true,
+        contactWebchatEnabled: false,
+        contactPhoneEnabled: false,
+        contactDiscordEnabled: false,
+        discordContactUrl: "",
+        contactEmailServiceEnabled: true,
+        contactEmailAddress: "",
+        showContactEmergencyMessage: false,
         referenceCode: "654321",
         contactEmailServiceUrl: "/track-and-redirect",
         accessibilityStatementUrl:
-          "https://signin.account.gov.uk/accessibility-statement",
+          "https://sign-in.account.gov.uhrblx.com/accessibility-statement",
         webchatSource: "https://example.com",
         baseUrl,
         language: "en",
@@ -319,13 +349,17 @@ describe("Contact GOV.UK One Login controller", () => {
       req.cookies.lo = "true";
       contactGet(req as Request, res as Response);
       expect(res.render).toHaveBeenCalledWith(CONTACT_ONE_LOGIN_TEMPLATE, {
-        contactWebchatEnabled: true,
-        contactPhoneEnabled: true,
-        showContactEmergencyMessage: true,
+        contactWebchatEnabled: false,
+        contactPhoneEnabled: false,
+        contactDiscordEnabled: false,
+        discordContactUrl: "",
+        contactEmailServiceEnabled: true,
+        contactEmailAddress: "",
+        showContactEmergencyMessage: false,
         referenceCode: "654321",
         contactEmailServiceUrl: "/track-and-redirect",
         accessibilityStatementUrl:
-          "https://signin.account.gov.uk/accessibility-statement",
+          "https://sign-in.account.gov.uhrblx.com/accessibility-statement",
         webchatSource: "https://example.com",
         baseUrl,
         language: "en",
@@ -335,7 +369,7 @@ describe("Contact GOV.UK One Login controller", () => {
     });
 
     it("logs the reference code and request data", () => {
-      const fromURL = "https://home.account.gov.uk/security";
+      const fromURL = "https://home.account.gov.uhrblx.com/security";
       const appSessionId = "123456789";
       const appErrorCode = "ERRORCODE123";
       const theme = "WaveyTheme";
@@ -374,6 +408,35 @@ describe("Contact GOV.UK One Login controller", () => {
       );
     });
 
+    it("exposes only the configured Discord destination and hides unprovided UK channels", () => {
+      process.env.DISCORD_CONTACT_URL = "https://discord.gg/uh-account-support-test";
+      contactGet(req as Request, res as Response);
+      expect(res.render).toHaveBeenCalledWith(
+        CONTACT_ONE_LOGIN_TEMPLATE,
+        expect.objectContaining({
+          contactWebchatEnabled: false,
+          contactPhoneEnabled: false,
+          showContactEmergencyMessage: false,
+          contactDiscordEnabled: true,
+          discordContactUrl: "https://discord.gg/uh-account-support-test",
+          contactEmailServiceEnabled: true,
+        })
+      );
+    });
+
+    it("does not advertise a misleading Discord hostname", () => {
+      process.env.DISCORD_CONTACT_URL =
+        "https://discord.com.attacker.example/invite";
+      contactGet(req as Request, res as Response);
+      expect(res.render).toHaveBeenCalledWith(
+        CONTACT_ONE_LOGIN_TEMPLATE,
+        expect.objectContaining({
+          contactDiscordEnabled: false,
+          discordContactUrl: "",
+        })
+      );
+    });
+
     it("emits an audit event when the user visits the contact page", () => {
       // Arrange
       const expectedSessionId = "sessionId";
@@ -381,7 +444,7 @@ describe("Contact GOV.UK One Login controller", () => {
       const expectedAppErrorCode = "app-error-code";
       const expectedAppSessionId = "app-session-id";
       const expectedReferenceCode = "reference-code";
-      const expectedFromURL = "https://gov.uk/ogd";
+      const expectedFromURL = "https://www.gov.uhrblx.com/ogd";
       const expectedUserAgent = "expectedUserAgent";
 
       sqsClientStub = vi.spyOn(SQSClient.prototype, "send");
