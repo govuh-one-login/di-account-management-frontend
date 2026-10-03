@@ -3,6 +3,7 @@ import { EventName, PATH_DATA } from "../../app.constants.js";
 
 import { eventService } from "../../services/event-service.js";
 import { buildContactEmailServiceUrl } from "./track-and-redirect-controller.js";
+import { getContactEmailServiceUrl } from "../../config.js";
 import { logger } from "../../utils/logger.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
@@ -13,6 +14,10 @@ router.get(PATH_DATA.TRACK_AND_REDIRECT.url, (req, res) => {
     logger.info(
       "Track and redirect route: request session or queryParameters are undefined."
     );
+    return res.redirect(PATH_DATA.CONTACT.url);
+  }
+  if (!getContactEmailServiceUrl()) {
+    logger.info("UH One Login email support destination is not configured.");
     return res.redirect(PATH_DATA.CONTACT.url);
   }
   const emailServiceUrl = buildContactEmailServiceUrl(req, res);
