@@ -1,247 +1,41 @@
 {% extends "common/layout/base-page.njk" %}
-{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
-{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
-{% set pageTitleName = 'pages.contact.title' | translate %}
+{% set pageTitleName = "Contact GOV.UH One Login" %}
 {% set hideAccountNavigation = true %}
-{% set secondaryContactMethodEnabled = contactPhoneEnabled or contactWebchatEnabled %}
-{% set webchatLang = "welsh" if language == "cy" else "hgsgds" %}
-{% set hideTitleProductName = true %}
-
-{% block head %}
-  {{ super() }}
-  <meta name="description" content="{{'pages.contact.metaDescription' | translate }}">
-  {% if contactWebchatEnabled %}
-    <link rel="stylesheet" nonce="{{scriptNonce}}" href="https://fonts.cdnfonts.com/css/rubik">
-    <link rel="stylesheet" nonce="{{scriptNonce}}" href="{{webchatSource}}/css/loader.css">
-  {% endif %}
-{% endblock %}
-
-{% set emailBlock %}
-  <section>
-    {% if secondaryContactMethodEnabled %}
-      <h3 class="govuk-heading-m">{{'pages.contact.section3.email.heading' | translate }}</h3>
-    {% endif %}
-    {% set emailParagraphs =  'pages.contact.section3.email.paragraphs' | translate({ returnObjects: true }) %}
-    {% for paragraph in emailParagraphs %}
-      <p class="govuk-body">{{ paragraph | safe | replace('[emailServiceLinkHref]', contactEmailServiceUrl ) }}</p>
-    {% endfor %}
-  </section>
-{% endset %}
-
-{% set refCodeBlock %}
-  {% set refCodeBlockParagraphs = 'pages.contact.refCodeBlock.paragraphsWebchat' | translate({ returnObjects: true }) if contactWebchatEnabled else 'pages.contact.refCodeBlock.paragraphsNoWebchat' | translate({ returnObjects: true }) %}
-  {% for paragraph in refCodeBlockParagraphs %}
-    <p class="govuk-body">{{ paragraph }}</p>
-  {% endfor %}
-
-  <p class="govuk-body contact-reference">
-    {{ 'pages.contact.refCodeBlock.refCode' | translate }}
-    <strong class="contact-reference__code">{{ referenceCode }}</strong>
-  </p>
-{% endset %}
-
-{% set phoneBlock %}
-  {% set phoneParagraphs1 = 'pages.contact.section3.phone.paragraphs' | translate({ returnObjects: true }) %}
-  {% set insetTextHtml %}
-    {% set insetTextParagraphs =  'pages.contact.section3.phone.insetText.paragraphs' | translate({ returnObjects: true }) %}
-    {% for paragraph in insetTextParagraphs %}
-      <p class="govuk-body">{{ paragraph | safe }}</p>
-    {% endfor %}
-  {% endset %}
-
-  <section>
-    <h3 class="govuk-heading-m">{{'pages.contact.section3.phone.heading' | translate}}</h3>
-    {% if not contactWebchatEnabled %}
-      {{refCodeBlock | safe }}
-    {% else %}
-      {% for paragraph in phoneParagraphs1 %}
-        <p class="govuk-body">{{ paragraph }}</p>
-      {% endfor %}
-    {% endif %}
-
-    {{ govukWarningText({
-      html: 'pages.contact.section3.phone.waitingTimeWarning' | translate | replace('[contactEmailServiceUrl]', contactEmailServiceUrl),
-      iconFallbackText: "Warning"
-    }) if showContactEmergencyMessage }}
-
-    {{ govukInsetText({
-      html: insetTextHtml
-    }) }}
-
-    <p class="govuk-body">{{'pages.contact.section3.phone.paragraph2' | translate }}</p>
-    <p class="govuk-body"><a class="govuk-link" href="https://www.gov.uk/call-charges">{{'pages.contact.section3.phone.callChargesLinkText' | translate }}</a></p>
-
-    <h4 class="govuk-heading-s">{{'pages.contact.section3.phone.relayUKHeading' | translate }}</h4>
-    <p class="govuk-body">{{'pages.contact.section3.phone.relayUKParagraph' | translate | safe | replace("[relayUkLink]","https://www.relayuk.bt.com/")}}</p>
-    </section>
-{% endset %}
-
-
-{# START page content #}
 
 {% block pageContent %}
-<h1 class="govuk-heading-xl">{{'pages.contact.header' | translate}}</h1>
+  <h1 class="govuk-heading-xl">Contact GOV.UH One Login</h1>
+  <p class="govuk-body">Use the contact methods made available by the GOV.UH One Login service for help accessing your account.</p>
+  <p class="govuk-body">Do not send passwords, security codes or identity documents by ordinary email or Discord. Use the appropriate secure service for sensitive information.</p>
 
-{% if not contactWebchatEnabled and not contactPhoneEnabled %}
-  {# if everything is disabled, only show the contact form option #}
-  {{ emailBlock | safe }}
-{% else %}
-  <section>
-    {% set section1Subsections =  'pages.contact.section1.sections' | translate({ returnObjects: true }) %}
-
-    <h2 class="govuk-heading-l">{{'pages.contact.section1.heading' | translate}}</h2>
-    <p class="govuk-body">{{ "pages.contact.section1.paragraph" | translate }}</p>
-
-    {% for subsection in section1Subsections %}
-    <h3 class="govuk-heading-m">{{ subsection["heading"] }}</h3>
-
-    <ul class="govuk-list govuk-list--bullet">
-      {% if subsection["links"].length %}
-        {% for link in subsection["links"] %}
-          {% if not link["only_show_when_passkeys_are_enabled"] or passkeysEnabled  %}
-            <li><a class="govuk-link" href="{{link["href"]}}">{{link["text"]}}</a></li>
-          {% endif %}
-        {% endfor %}
-      {% elseif subsection["paragraphs"].length %}
-        {% for paragraph in subsection["paragraphs"] %}
-          <li>{{ paragraph | safe }}</li>
-        {% endfor %}
-      {% endif %}
-    </ul>
-    {% endfor %}
-  </section>
-  <hr class="govuk-section-break govuk-section-break--m">
-
-  {% if contactPhoneEnabled and contactWebchatEnabled %}
-    <section>
-      <h2 class="govuk-heading-l">{{'pages.contact.section2.heading' | translate}}</h2>
-      {{ refCodeBlock | safe }}
-    </section>
-    <hr class="govuk-section-break govuk-section-break--m">
+  {% if referenceCode %}
+    <p class="govuk-body">Your support reference: <strong>{{ referenceCode }}</strong></p>
   {% endif %}
 
-  <section>
-    <h2 class="govuk-heading-l">{% if secondaryContactMethodEnabled %}{{'pages.contact.section3.headingMany' | translate}}{% else %}{{'pages.contact.section3.headingOne' | translate }}{% endif %}</h2>
-    {% if contactWebchatEnabled %}
-      <section>
-        <h3 class="govuk-heading-m">{{'pages.contact.section3.webchat.heading' | translate }}</h3>
-
-        <div class="contact-webchat-js-enabled">
-          {% set webchatParagraphs =  'pages.contact.section3.webchat.paragraphs1' | translate({ returnObjects: true }) %}
-
-          {% for paragraph in webchatParagraphs %}
-            <p class="govuk-body">{{ paragraph }}</p>
-          {% endfor %}
-
-          <p class="govuk-body"><button type="button" class="launch-webchat-link" data-launch-webchat hidden>{{ 'pages.contact.section3.webchat.linkText' | translate }}</button></p>
-        </div>
-
-        <noscript>
-          {% set webchatParagraphs1 =  'pages.contact.section3.webchat.javascriptDisabled.paragraphs1' | translate({ returnObjects: true }) %}
-
-          {% for paragraph in webchatParagraphs1 %}
-            <p class="govuk-body">{{ paragraph }}</p>
-          {% endfor %}
-
-          {% set listItems =  'pages.contact.section3.webchat.javascriptDisabled.listItems' | translate({ returnObjects: true }) %}
-
-          {% if listItems.length %}
-            <ul class="govuk-list govuk-list--bullet">
-              {% for listItem in listItems %}
-                <li>{{ listItem }}</li>
-              {% endfor %}
-            </ul>
-          {% endif %}
-
-          {% set webchatParagraphs2 =  'pages.contact.section3.webchat.javascriptDisabled.paragraphs2' | translate({ returnObjects: true }) %}
-
-          {% for paragraph in webchatParagraphs2 %}
-            <p class="govuk-body">{{ paragraph }}</p>
-          {% endfor %}
-
-          {% set listLinks =  'pages.contact.section3.webchat.javascriptDisabled.listLinks' | translate({ returnObjects: true }) %}
-
-          {% if listLinks.length %}
-            <ul class="govuk-list govuk-list--bullet">
-              {% for link in listLinks %}
-                <li><a class="govuk-link" href="{{link["href"]}}" target="_blank" rel="noreferrer noopener">{{link["html"] | safe}}</a></li>
-              {% endfor %}
-            </ul>
-          {% endif %}
-        </noscript>
-      </section>
-    {% endif %}
-
-    {% if contactPhoneEnabled %}
-      {{ phoneBlock | safe }}
-    {% endif %}
-
-    {{ emailBlock | safe }}
-  </section>
-  {% if secondaryContactMethodEnabled %}
-    {# privacy notice section should only be visible if webchat and/or phone contact are enabled #}
-    <hr class="govuk-section-break govuk-section-break--m">
-    <section>
-      <h2 class="govuk-heading-l">{{'pages.contact.section4.heading' | translate}}</h2>
-      <p class="govuk-body">{{ 'pages.contact.section4.paragraph' | translate | replace('[link]', "PRIVACY_NOTICE" | getExternalUrl ) | safe }}</p>
+  {% if contactEmailServiceEnabled %}
+    <section aria-labelledby="secure-account-support">
+      <h2 class="govuk-heading-m" id="secure-account-support">Online account support</h2>
+      <p class="govuk-body"><a class="govuk-link" href="{{ contactEmailServiceUrl }}">Use the account support form</a>.</p>
     </section>
   {% endif %}
-{% endif %}
 
-{% if contactWebchatEnabled %}
-  <script id="smartagent" type="module" defer
-    src="{{ webchatSource }}/loader/main.js"
-    data-company="hgsgds" facia="{{webchatLang}}"
-    nonce="{{ scriptNonce }}">
-  </script>
+  {% if contactEmailAddress %}
+    <section aria-labelledby="account-email-support">
+      <h2 class="govuk-heading-m" id="account-email-support">Email</h2>
+      <p class="govuk-body"><a class="govuk-link" href="mailto:{{ contactEmailAddress | urlencode }}">{{ contactEmailAddress }}</a></p>
+    </section>
+  {% endif %}
 
-  <script type="text/javascript" nonce='{{scriptNonce}}'>
-    var launchWebchatButton = document.querySelector("[data-launch-webchat]");
+  {% if contactDiscordEnabled %}
+    <section aria-labelledby="account-discord-support">
+      <h2 class="govuk-heading-m" id="account-discord-support">Discord</h2>
+      <p class="govuk-body"><a class="govuk-link" href="{{ discordContactUrl }}" target="_blank" rel="noopener noreferrer">Open the official GOV.UH One Login Discord contact (opens in a new tab)</a></p>
+      <p class="govuk-body">A Discord account is optional. Discord messages are not the authoritative record for confidential account or service decisions.</p>
+    </section>
+  {% endif %}
 
-    launchWebchatButton.addEventListener("click", function() {
-      const webchatWindow = document.querySelector(".sa-chat-slideout");
-      if (window._sa && webchatWindow) {
-        try {
-          window._sa.toggleChat();
-          // setTimeout is only necessary here because the toggleChat() function uses setTimeout when setting focus and toggling the isOpen state
-          setTimeout(() => {
-            if (window._sa.isOpen()) {
-              // when the webchat is opened using the "Use webchat" button, move focus to the first focusable element in the window
-              webchatWindow.querySelector('button').focus();
-            } else {
-              // when the webchat is closed using the "Use webchat" button, move focus back to the "Use webchat" button
-              launchWebchatButton.focus();
-            }
-          },0)
-        }
-        catch(err) {
-          console.error(err);
-        }
-      }
-    });
+  {% if not contactEmailServiceEnabled and not contactEmailAddress and not contactDiscordEnabled %}
+    <p class="govuk-body">Account support contact details have not yet been configured. Do not present this page as an operational support service.</p>
+  {% endif %}
 
-    function waitForSaEvents(){
-      // if saEvents does not exist, chat has not loaded yet
-      if(typeof window.saEvents !== "undefined"){
-        window.saEvents.subscribe(function (event) {
-          if (event.type === "CHAT_LOADED") {
-            // as soon as a CHAT_LOADED event is received from the webchat, make the "Use webchat" toggle visible and stop listening for chat events
-            launchWebchatButton.removeAttribute('hidden');
-            clearInterval(webchatInterval);
-            clearTimeout(cancelInterval);
-          }
-        });
-      }
-    }
-
-    // the webchat script injects other scripts and assets into the page
-    // therefore the "saEvents" object is not immediately available to subscribe to
-    // this checks whether "saEvents" is available every 200ms
-    var webchatInterval = setInterval(waitForSaEvents, 200);
-    var cancelInterval = setTimeout(function(){
-      // if webchat events still unavailable after 10s, clear the interval
-      clearInterval(webchatInterval);
-    }, 10000)
-  </script>
-{% endif %}
+  <p class="govuk-body">You can read public information on GOV.UH without signing in.</p>
 {% endblock %}
