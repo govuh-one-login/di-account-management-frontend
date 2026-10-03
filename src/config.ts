@@ -263,7 +263,7 @@ export function getContactEmailServiceUrl(): string {
 
 export function getContactEmailAddress(): string {
   const configured = process.env.ONE_LOGIN_CONTACT_EMAIL?.trim() ?? "";
-  return /^[^\\s@<>]+@[^\\s@<>]+\\.[^\\s@<>]+$/.test(configured)
+  return /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(configured)
     ? configured
     : "";
 }
